@@ -150,7 +150,7 @@ public class MainMenu extends JFrame {
         listePaiements.addActionListener(e -> new paiement.PaiementList());
 
 
-        // Actions menu
+        
         ajouterVoiture.addActionListener(e -> new VoitureForm());
         listeVoiture.addActionListener(e -> new voiture.VoitureList());
         ajouterClient.addActionListener(e -> new client.ClientForm());

@@ -2,7 +2,6 @@ package client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import pack.DatabaseConnection;
 
@@ -36,6 +35,14 @@ public class ClientEdit extends JFrame {
 
         btnCharger.addActionListener(e -> chargerClient());
         btnModifier.addActionListener(e -> modifierClient());
+        
+        JButton btnRetour = new JButton("Retour au menu");
+        btnRetour.addActionListener(e -> {
+            this.dispose();
+            new pack.MainMenu();
+        });
+        add(btnRetour);
+
 
         setVisible(true);
     }

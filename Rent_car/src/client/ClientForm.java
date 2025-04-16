@@ -2,50 +2,52 @@ package client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import pack.DatabaseConnection;
+import pack.MainMenu;
 
 public class ClientForm extends JFrame {
     private JTextField tfNom, tfPrenom, tfEmail, tfTelephone, tfAdresse;
-    private JButton btnAjouter;
+    private JButton btnAjouter, btnRetour;
 
     public ClientForm() {
         setTitle("Ajouter un client");
-        setSize(400, 300);
+        setSize(450, 300);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new GridLayout(6, 2, 5, 5));
+        setLayout(new BorderLayout(10, 10));
 
-        // Champs
-        add(new JLabel("Nom:"));
+        // === Panel pour les champs ===
+        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
         tfNom = new JTextField();
-        add(tfNom);
-
-        add(new JLabel("Prénom:"));
         tfPrenom = new JTextField();
-        add(tfPrenom);
-
-        add(new JLabel("Email:"));
         tfEmail = new JTextField();
-        add(tfEmail);
-
-        add(new JLabel("Téléphone:"));
         tfTelephone = new JTextField();
-        add(tfTelephone);
-
-        add(new JLabel("Adresse:"));
         tfAdresse = new JTextField();
-        add(tfAdresse);
 
-        // Bouton
+        panelForm.add(new JLabel("Nom:"));        panelForm.add(tfNom);
+        panelForm.add(new JLabel("Prénom:"));     panelForm.add(tfPrenom);
+        panelForm.add(new JLabel("Email:"));      panelForm.add(tfEmail);
+        panelForm.add(new JLabel("Téléphone:"));  panelForm.add(tfTelephone);
+        panelForm.add(new JLabel("Adresse:"));    panelForm.add(tfAdresse);
+
+        add(panelForm, BorderLayout.CENTER);
+
+        // === Panel pour les boutons ===
         btnAjouter = new JButton("Ajouter");
-        add(btnAjouter);
+        btnRetour = new JButton("Retour au menu");
 
+        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelBoutons.add(btnAjouter);
+        panelBoutons.add(btnRetour);
+        add(panelBoutons, BorderLayout.SOUTH);
+
+        // Actions des boutons
         btnAjouter.addActionListener(e -> ajouterClient());
-
-        // Case vide pour mise en forme
-        add(new JLabel(""));
+        btnRetour.addActionListener(e -> {
+            this.dispose();
+            new MainMenu();
+        });
 
         setVisible(true);
     }
@@ -73,7 +75,8 @@ public class ClientForm extends JFrame {
             ps.executeUpdate();
 
             JOptionPane.showMessageDialog(this, "Client ajouté avec succès !");
-            this.dispose(); // Ferme la fenêtre
+            this.dispose();
+            new MainMenu();
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur SQL : " + ex.getMessage());

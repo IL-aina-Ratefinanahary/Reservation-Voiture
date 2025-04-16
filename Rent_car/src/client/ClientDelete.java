@@ -2,37 +2,43 @@ package client;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import pack.DatabaseConnection;
+import pack.MainMenu;
 
 public class ClientDelete extends JFrame {
     private JTextField tfId;
-    private JButton btnSupprimer;
+    private JButton btnSupprimer, btnRetour;
 
     public ClientDelete() {
         setTitle("Supprimer un client");
-        setSize(300, 150);
+        setSize(400, 180);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10)); // Le bon layout ici
+        setLayout(new BorderLayout(10, 10)); // ✅ Layout principal
 
-        // Partie formulaire (ID uniquement)
+        // Panel formulaire avec ID
         JPanel panelForm = new JPanel(new GridLayout(1, 2, 5, 5));
         panelForm.add(new JLabel("ID Client:"));
         tfId = new JTextField();
         panelForm.add(tfId);
         add(panelForm, BorderLayout.CENTER);
 
-        // Partie bouton
+        // Boutons en bas
         btnSupprimer = new JButton("Supprimer");
-        btnSupprimer.setPreferredSize(new Dimension(150, 30));
+        btnRetour = new JButton("Retour au menu");
 
-        JPanel panelBouton = new JPanel(); // FlowLayout par défaut = centré
-        panelBouton.add(btnSupprimer);
-        add(panelBouton, BorderLayout.SOUTH);
+        JPanel panelActions = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelActions.add(btnSupprimer);
+        panelActions.add(btnRetour);
+        add(panelActions, BorderLayout.SOUTH);
 
+        // Action boutons
         btnSupprimer.addActionListener(e -> supprimerClient());
+        btnRetour.addActionListener(e -> {
+            this.dispose();
+            new MainMenu();
+        });
 
         setVisible(true);
     }
@@ -47,6 +53,7 @@ public class ClientDelete extends JFrame {
             if (rows > 0) {
                 JOptionPane.showMessageDialog(this, "Client supprimé !");
                 this.dispose();
+                new MainMenu(); // Optionnel si tu veux revenir automatiquement
             } else {
                 JOptionPane.showMessageDialog(this, "Aucun client trouvé.");
             }

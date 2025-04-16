@@ -40,6 +40,15 @@ public class ClientList extends JFrame {
         panelBoutons.add(btnSupprimer);
         panelBoutons.add(btnModifier);
         add(panelBoutons, BorderLayout.SOUTH);
+        
+        JButton btnRetour = new JButton("Retour au menu");
+        btnRetour.setPreferredSize(new Dimension(150, 30));
+        btnRetour.addActionListener(e -> {
+            this.dispose();
+            new pack.MainMenu();
+        });
+        panelBoutons.add(btnRetour);
+
 
         btnSupprimer.addActionListener(e -> supprimerClientSelectionne());
         btnModifier.addActionListener(e -> modifierClientSelectionne());
@@ -125,5 +134,46 @@ public class ClientList extends JFrame {
 	private void rechargerListe() {
             model.setRowCount(0);  // Vide le tableau
             chargerClients();      // Recharge depuis la base
-        }
+    }
+	
+	public ClientList(String filtreTexte) {
+	    this(); // Appelle le constructeur sans paramètre
+	    appliquerFiltreTexte(filtreTexte);
+	}
+	
+	private void appliquerFiltreTexte(String texte) {
+	    texte = texte.toLowerCase();
+	    model.setRowCount(0);
+
+	    try (Connection conn = DatabaseConnection.getConnection()) {
+	        String sql = """
+	            SELECT * FROM CLIENT
+	            WHERE LOWER(Nom) LIKE ? 
+	               OR LOWER(Prenom) LIKE ?
+	               OR LOWER(Email_client) LIKE ?
+	        """;
+
+	        PreparedStatement ps = conn.prepareStatement(sql);
+	        ps.setString(1, "%" + texte + "%");
+	        ps.setString(2, "%" + texte + "%");
+	        ps.setString(3, "%" + texte + "%");
+
+	        ResultSet rs = ps.executeQuery();
+	        while (rs.next()) {
+	            model.addRow(new Object[] {
+	                rs.getInt("IdClient"),
+	                rs.getString("Nom"),
+	                rs.getString("Prenom"),
+	                rs.getString("Email_client"),
+	                rs.getString("Telephone_client"),
+	                rs.getString("Adresse_client")
+	            });
+	        }
+
+	    } catch (SQLException e) {
+	        JOptionPane.showMessageDialog(this, "Erreur recherche : " + e.getMessage());
+	    }
+	}
+
+
 }

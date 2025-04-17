@@ -168,25 +168,33 @@ public class ReservationList extends JFrame {
         }
 
         int idResa = (int) model.getValueAt(row, 0);
-        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer la réservation ID " + idResa + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Supprimer la réservation ID " + idResa + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
 
         if (confirm == JOptionPane.YES_OPTION) {
             try (Connection conn = DatabaseConnection.getConnection()) {
-                // 1. Récupère IdVoiture
+
+                // 1. Supprimer les choix liés à la réservation
+                String delChoixSQL = "DELETE FROM CHOIX_RESERVATION WHERE IdReservation = ?";
+                PreparedStatement psChoix = conn.prepareStatement(delChoixSQL);
+                psChoix.setInt(1, idResa);
+                psChoix.executeUpdate();
+
+                // 2. Récupère IdVoiture
                 String getSQL = "SELECT IdVoiture FROM RESERVATION WHERE IdReservation = ?";
                 PreparedStatement psGet = conn.prepareStatement(getSQL);
                 psGet.setInt(1, idResa);
                 ResultSet rs = psGet.executeQuery();
                 int idVoiture = rs.next() ? rs.getInt("IdVoiture") : -1;
 
-                // 2. Supprime la réservation
+                // 3. Supprimer la réservation
                 String deleteSQL = "DELETE FROM RESERVATION WHERE IdReservation = ?";
                 PreparedStatement psDelete = conn.prepareStatement(deleteSQL);
                 psDelete.setInt(1, idResa);
                 int rows = psDelete.executeUpdate();
 
                 if (rows > 0 && idVoiture != -1) {
-                    // 3. Rend la voiture disponible
+                    // 4. Rend la voiture disponible
                     String updateSQL = "UPDATE VOITURE SET Disponibilite = TRUE WHERE IdVoiture = ?";
                     PreparedStatement psUpdate = conn.prepareStatement(updateSQL);
                     psUpdate.setInt(1, idVoiture);
@@ -195,11 +203,13 @@ public class ReservationList extends JFrame {
                     model.removeRow(row);
                     JOptionPane.showMessageDialog(this, "Réservation supprimée !");
                 }
+
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Erreur suppression : " + e.getMessage());
             }
         }
     }
+
 
     private void modifierReservation() {
         int row = table.getSelectedRow();

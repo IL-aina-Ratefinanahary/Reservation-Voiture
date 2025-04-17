@@ -26,37 +26,107 @@ public class ReservationForm extends JFrame {
 
     public ReservationForm() {
         setTitle("Nouvelle réservation");
-        setSize(500, 400);
+        setSize(1000, 500);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(100, 100));
+        
+        setResizable(false);
 
-        // === Panel formulaire ===
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
-
+        
         cbClient = new JComboBox<>();
         cbVoiture = new JComboBox<>();
         tfPrixTotal = new JTextField();
+        
+        cbClient.setPreferredSize(new Dimension(150, 35));
+        cbVoiture.setPreferredSize(new Dimension(150, 35));
+        tfPrixTotal.setPreferredSize(new Dimension(150, 35));
+        
         tfPrixTotal.setEditable(false);
 
+        
+        
         // Création des pickers de dates
         dateDebutPicker = createDatePicker();
         dateFinPicker = createDatePicker();
 
-        panelForm.add(new JLabel("Client :"));          panelForm.add(cbClient);
-        panelForm.add(new JLabel("Voiture :"));         panelForm.add(cbVoiture);
-        panelForm.add(new JLabel("Date début :"));      panelForm.add(dateDebutPicker);
-        panelForm.add(new JLabel("Date fin :"));        panelForm.add(dateFinPicker);
-        panelForm.add(new JLabel("Prix total ($) :"));  panelForm.add(tfPrixTotal);
-        panelForm.add(new JLabel("Options ($) :"));     panelForm.add(lblOptionsTotal);
-        panelForm.add(new JLabel("Total final ($) :")); panelForm.add(lblTotalFinal);
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        gbc.weightx = 1; 
+
+
+        // Ligne 1 : Client
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelForm.add(new JLabel("Client :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(cbClient, gbc);
+
+        // Ligne 2 : Voiture
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Voiture :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(cbVoiture, gbc);
+
+        // Ligne 3 : Date début
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Date début :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(dateDebutPicker, gbc);
+
+        // Ligne 4 : Date fin
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Date fin :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(dateFinPicker, gbc);
+
+        // Ligne 5 : Prix voiture
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Prix total ($) :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(tfPrixTotal, gbc);
+
+        // Ligne 6 : Prix options
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Options ($) :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(lblOptionsTotal, gbc);
+
+        // Ligne 7 : Total final
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Total final ($) :"), gbc);
+
+        gbc.gridx = 1;
+        panelForm.add(lblTotalFinal, gbc);
+
 
 
         add(panelForm, BorderLayout.CENTER);
         
         panelChoix = new JPanel(new GridLayout(0, 2, 5, 5));
         panelChoix.setBorder(BorderFactory.createTitledBorder("Options disponibles (quantité)"));
-        add(panelChoix, BorderLayout.EAST);
+        
+        JScrollPane scrollPaneChoix = new JScrollPane(panelChoix);
+        
+        scrollPaneChoix.setPreferredSize(new Dimension(500, 500));
+        
+        add(scrollPaneChoix, BorderLayout.EAST);
+
 
         chargerChoix();
 
@@ -126,7 +196,7 @@ public class ReservationForm extends JFrame {
     } catch (Exception e) {
         lblTotalFinal.setText("0.00");
     }
-}
+    }
 
 
     private void chargerChoix() {
@@ -140,8 +210,11 @@ public class ReservationForm extends JFrame {
                 JCheckBox cb = new JCheckBox(nom);
                 cb.setName(String.valueOf(id));
 
-                JTextField tfQte = new JTextField("1");
-                tfQte.setPreferredSize(new Dimension(50, 25));
+                JTextField tfQte = new JTextField("0");
+                
+                tfQte.setHorizontalAlignment(JTextField.CENTER);
+                
+                tfQte.setPreferredSize(new Dimension(50, 50));
 
                 checkChoix.add(cb);
                 quantitesChoix.add(tfQte);
@@ -157,7 +230,7 @@ public class ReservationForm extends JFrame {
                 });
             }
 
-            calculerTotalOptions(); // Un appel unique à la fin
+            calculerTotalOptions(); 
 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Erreur chargement options : " + e.getMessage());

@@ -11,37 +11,65 @@ public class AgenceForm extends JFrame {
 
     public AgenceForm() {
         setTitle("Ajouter une agence");
-        setSize(400, 300);
+        setSize(500, 300);
+        setResizable(false); // Empêche le redimensionnement
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new GridLayout(5, 2, 10, 10));
+        setLayout(new BorderLayout(10, 10));
 
-        add(new JLabel("Nom de l'agence :"));
-        tfNom = new JTextField();
-        add(tfNom);
+        // === Formulaire avec GridBagLayout ===
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        add(new JLabel("Adresse :"));
-        tfAdresse = new JTextField();
-        add(tfAdresse);
+        tfNom = new JTextField(20);
+        tfAdresse = new JTextField(20);
+        tfTelephone = new JTextField(20);
+        tfEmail = new JTextField(20);
 
-        add(new JLabel("Téléphone :"));
-        tfTelephone = new JTextField();
-        add(tfTelephone);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelForm.add(new JLabel("Nom de l'agence :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfNom, gbc);
 
-        add(new JLabel("Email :"));
-        tfEmail = new JTextField();
-        add(tfEmail);
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Adresse :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfAdresse, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Téléphone :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfTelephone, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Email :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfEmail, gbc);
+
+        add(panelForm, BorderLayout.CENTER);
+
+        // === Boutons ===
         JButton btnAjouter = new JButton("Ajouter");
-        btnAjouter.addActionListener(e -> ajouterAgence());
-        add(btnAjouter);
-
         JButton btnRetour = new JButton("Retour au menu");
+
+        JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelButtons.add(btnAjouter);
+        panelButtons.add(btnRetour);
+        add(panelButtons, BorderLayout.SOUTH);
+
+        // === Actions ===
+        btnAjouter.addActionListener(e -> ajouterAgence());
+
         btnRetour.addActionListener(e -> {
             this.dispose();
             new MainMenu();
         });
-        add(btnRetour);
 
         setVisible(true);
     }
@@ -50,17 +78,17 @@ public class AgenceForm extends JFrame {
         try (Connection conn = DatabaseConnection.getConnection()) {
             String sql = "INSERT INTO AGENCE (Nom_agence, Adresse_agence, Telephone_agence, Email_agence) VALUES (?, ?, ?, ?)";
             PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, tfNom.getText());
-            ps.setString(2, tfAdresse.getText());
-            ps.setString(3, tfTelephone.getText());
-            ps.setString(4, tfEmail.getText());
+            ps.setString(1, tfNom.getText().trim());
+            ps.setString(2, tfAdresse.getText().trim());
+            ps.setString(3, tfTelephone.getText().trim());
+            ps.setString(4, tfEmail.getText().trim());
             ps.executeUpdate();
 
-            JOptionPane.showMessageDialog(this, "Agence ajoutée !");
+            JOptionPane.showMessageDialog(this, "✅ Agence ajoutée avec succès !");
             this.dispose();
             new MainMenu();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "❌ Erreur SQL : " + e.getMessage());
         }
     }
 }

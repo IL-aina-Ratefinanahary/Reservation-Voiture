@@ -25,23 +25,34 @@ public class PaiementForm extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
+        
+        setResizable(false);
 
-        // === Formulaire ===
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
 
+     // === Formulaire ===
         cbReservation = new JComboBox<>();
         tfMontant = new JTextField();
         cbModePaiement = new JComboBox<>(new String[] {"Carte", "Espèces", "Virement"});
         cbStatutPaiement = new JComboBox<>(new String[] {"Payé", "En attente", "Échoué"});
         datePicker = createDatePicker();
 
-        panelForm.add(new JLabel("Réservation :"));    panelForm.add(cbReservation);
-        panelForm.add(new JLabel("Date de paiement :")); panelForm.add(datePicker);
-        panelForm.add(new JLabel("Montant :"));         panelForm.add(tfMontant);
-        panelForm.add(new JLabel("Mode :"));            panelForm.add(cbModePaiement);
-        panelForm.add(new JLabel("Statut :"));          panelForm.add(cbStatutPaiement);
-        panelForm.add(new JLabel("Montant réservation ($) :"));  // titre
-        panelForm.add(lblPrixReservation);                       // valeur affichée
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10); // marge autour des composants
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        gbc.gridx = 0; gbc.gridy = 0; panelForm.add(new JLabel("Réservation :"), gbc);
+        gbc.gridx = 1; panelForm.add(cbReservation, gbc);
+        gbc.gridx = 0; gbc.gridy++; panelForm.add(new JLabel("Date de paiement :"), gbc);
+        gbc.gridx = 1; panelForm.add(datePicker, gbc);
+        gbc.gridx = 0; gbc.gridy++; panelForm.add(new JLabel("Montant :"), gbc);
+        gbc.gridx = 1; panelForm.add(tfMontant, gbc);
+        gbc.gridx = 0; gbc.gridy++; panelForm.add(new JLabel("Mode :"), gbc);
+        gbc.gridx = 1; panelForm.add(cbModePaiement, gbc);
+        gbc.gridx = 0; gbc.gridy++; panelForm.add(new JLabel("Statut :"), gbc);
+        gbc.gridx = 1; panelForm.add(cbStatutPaiement, gbc);
+        gbc.gridx = 0; gbc.gridy++; panelForm.add(new JLabel("Montant réservation ($) :"), gbc);
+        gbc.gridx = 1; panelForm.add(lblPrixReservation, gbc);
 
 
         add(panelForm, BorderLayout.CENTER);

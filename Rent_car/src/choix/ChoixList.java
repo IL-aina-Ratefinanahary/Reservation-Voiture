@@ -1,6 +1,7 @@
 package choix;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
@@ -15,25 +16,41 @@ public class ChoixList extends JFrame {
 
     public ChoixList() {
         setTitle("Liste des options (choix)");
-        setSize(700, 400);
+        setSize(800, 450);
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // === Tableau ===
+        // === Modèle de table ===
         model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[] {
             "ID", "Nom", "Description", "Prix ($)"
         });
 
+        // === Table ===
         table = new JTable(model);
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // Centrage des cellules
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        // === Boutons bas ===
+        // === Boutons ===
         btnModifier = new JButton("Modifier");
         btnSupprimer = new JButton("Supprimer");
         btnRetour = new JButton("Retour");
+
+        btnModifier.setPreferredSize(new Dimension(120, 30));
+        btnSupprimer.setPreferredSize(new Dimension(120, 30));
+        btnRetour.setPreferredSize(new Dimension(150, 30));
 
         JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBas.add(btnModifier);

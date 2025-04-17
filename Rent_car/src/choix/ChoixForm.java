@@ -13,32 +13,51 @@ public class ChoixForm extends JFrame {
 
     public ChoixForm() {
         setTitle("Ajouter un choix (option)");
-        setSize(450, 300);
+        setSize(500, 300);
+        setResizable(false); // 🔒 empêche le redimensionnement
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // === Formulaire ===
-        JPanel panelForm = new JPanel(new GridLayout(4, 2, 10, 10));
+        // === Panel Formulaire avec GridBagLayout ===
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        tfNom = new JTextField();
-        tfDescription = new JTextField();
-        tfPrix = new JTextField();
+        tfNom = new JTextField(20);
+        tfDescription = new JTextField(20);
+        tfPrix = new JTextField(20);
 
-        panelForm.add(new JLabel("Nom de l’option :"));     panelForm.add(tfNom);
-        panelForm.add(new JLabel("Description :"));         panelForm.add(tfDescription);
-        panelForm.add(new JLabel("Prix ($) :"));            panelForm.add(tfPrix);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panelForm.add(new JLabel("Nom de l’option :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfNom, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Description :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfDescription, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        panelForm.add(new JLabel("Prix ($) :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfPrix, gbc);
 
         add(panelForm, BorderLayout.CENTER);
 
-        // === Boutons ===
+        // === Boutons centrés ===
         btnAjouter = new JButton("Ajouter");
         btnRetour = new JButton("Retour");
 
-        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        panelBoutons.add(btnAjouter);
-        panelBoutons.add(btnRetour);
-        add(panelBoutons, BorderLayout.SOUTH);
+        JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelButtons.add(btnAjouter);
+        panelButtons.add(btnRetour);
+
+        add(panelButtons, BorderLayout.SOUTH);
 
         // === Actions ===
         btnRetour.addActionListener(e -> {

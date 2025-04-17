@@ -1,6 +1,7 @@
 package client;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
@@ -14,41 +15,53 @@ public class ClientList extends JFrame {
 
     public ClientList() {
         setTitle("Liste des clients");
-        setSize(800, 400);
-        setLocationRelativeTo(null);
+        setSize(900, 400);
+        setLocationRelativeTo(null); // Centré à l'écran
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setResizable(false);
         setLayout(new BorderLayout());
 
-        // Table
+        // === Table et modèle ===
         model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[] {
             "IdClient", "Nom", "Prénom", "Email", "Téléphone", "Adresse"
         });
 
         table = new JTable(model);
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // Centre le contenu de toutes les colonnes
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Boutons d'action
+        // === Boutons ===
         btnSupprimer = new JButton("Supprimer");
         btnModifier = new JButton("Modifier");
+        JButton btnRetour = new JButton("Retour au menu");
 
-        btnSupprimer.setPreferredSize(new Dimension(120, 30));
-        btnModifier.setPreferredSize(new Dimension(120, 30));
+        btnSupprimer.setPreferredSize(new Dimension(130, 30));
+        btnModifier.setPreferredSize(new Dimension(130, 30));
+        btnRetour.setPreferredSize(new Dimension(160, 30));
 
-        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 15));
         panelBoutons.add(btnSupprimer);
         panelBoutons.add(btnModifier);
+        panelBoutons.add(btnRetour);
+
         add(panelBoutons, BorderLayout.SOUTH);
-        
-        JButton btnRetour = new JButton("Retour au menu");
-        btnRetour.setPreferredSize(new Dimension(150, 30));
+
+        // === Actions ===
         btnRetour.addActionListener(e -> {
             this.dispose();
             new pack.MainMenu();
         });
-        panelBoutons.add(btnRetour);
-
 
         btnSupprimer.addActionListener(e -> supprimerClientSelectionne());
         btnModifier.addActionListener(e -> modifierClientSelectionne());
@@ -57,6 +70,7 @@ public class ClientList extends JFrame {
 
         setVisible(true);
     }
+
 
     private void chargerClients() {
         try (Connection conn = DatabaseConnection.getConnection()) {

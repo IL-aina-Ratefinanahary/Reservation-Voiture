@@ -1,6 +1,7 @@
 package agence;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
@@ -15,28 +16,41 @@ public class AgenceList extends JFrame {
 
     public AgenceList() {
         setTitle("Liste des agences");
-        setSize(700, 400);
+        setSize(800, 450);
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        // === Modèle de table ===
         model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[] {
             "IdAgence", "Nom", "Adresse", "Téléphone", "Email"
         });
 
+        // === Table ===
         table = new JTable(model);
-        btnModifier = new JButton("Modifier");
-        btnSupprimer = new JButton("Supprimer");
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
 
-        
-        
+        // Centrage des cellules
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
+        // === Boutons ===
         btnModifier = new JButton("Modifier");
         btnSupprimer = new JButton("Supprimer");
         JButton btnRetour = new JButton("Retour au menu");
+
+        btnModifier.setPreferredSize(new Dimension(120, 30));
+        btnSupprimer.setPreferredSize(new Dimension(120, 30));
+        btnRetour.setPreferredSize(new Dimension(150, 30));
 
         btnModifier.addActionListener(e -> modifierAgence());
         btnSupprimer.addActionListener(e -> supprimerAgence());
@@ -45,16 +59,16 @@ public class AgenceList extends JFrame {
             new MainMenu();
         });
 
-        JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBas.add(btnModifier);
         panelBas.add(btnSupprimer);
         panelBas.add(btnRetour);
         add(panelBas, BorderLayout.SOUTH);
 
-
         chargerAgences();
         setVisible(true);
     }
+
 
     private void chargerAgences() {
         model.setRowCount(0);

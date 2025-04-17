@@ -17,7 +17,8 @@ public class PaiementList extends JFrame {
 
     public PaiementList() {
         setTitle("Liste des paiements");
-        setSize(900, 500);
+        setSize(1000, 500);
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
@@ -29,8 +30,17 @@ public class PaiementList extends JFrame {
         });
 
         table = new JTable(model);
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
 
-        // Coloration conditionnelle
+        // === Centrage général des colonnes ===
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        // === Coloration conditionnelle sur la colonne "Statut" (colonne 4) ===
         table.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -40,9 +50,9 @@ public class PaiementList extends JFrame {
                 String statut = (String) value;
 
                 if ("Payé".equalsIgnoreCase(statut)) {
-                    c.setBackground(new Color(204, 255, 204)); // vert
+                    c.setBackground(new Color(204, 255, 204)); // vert clair
                 } else {
-                    c.setBackground(new Color(255, 204, 204)); // rouge
+                    c.setBackground(new Color(255, 204, 204)); // rouge clair
                 }
 
                 if (isSelected) {
@@ -52,6 +62,7 @@ public class PaiementList extends JFrame {
                     c.setForeground(Color.BLACK);
                 }
 
+                ((JLabel) c).setHorizontalAlignment(SwingConstants.CENTER);
                 return c;
             }
         });
@@ -59,7 +70,7 @@ public class PaiementList extends JFrame {
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // === Zone recherche combinée ===
-        JPanel panelFiltre = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panelFiltre = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         panelFiltre.setBorder(BorderFactory.createTitledBorder("🔎 Recherche par client + statut"));
 
         tfRechercheClient = new JTextField(15);
@@ -79,10 +90,15 @@ public class PaiementList extends JFrame {
         btnSupprimer = new JButton("Supprimer");
         btnRetour = new JButton("Retour");
 
-        JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        btnModifier.setPreferredSize(new Dimension(120, 30));
+        btnSupprimer.setPreferredSize(new Dimension(120, 30));
+        btnRetour.setPreferredSize(new Dimension(120, 30));
+
+        JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBas.add(btnModifier);
         panelBas.add(btnSupprimer);
         panelBas.add(btnRetour);
+
         add(panelBas, BorderLayout.SOUTH);
 
         // === Actions ===
@@ -93,7 +109,6 @@ public class PaiementList extends JFrame {
 
         btnModifier.addActionListener(e -> modifierPaiement());
         btnSupprimer.addActionListener(e -> supprimerPaiement());
-
         btnRechercher.addActionListener(e -> {
             String client = tfRechercheClient.getText().trim().toLowerCase();
             String statut = cbFiltreStatut.getSelectedItem().toString();
@@ -103,6 +118,7 @@ public class PaiementList extends JFrame {
         chargerPaiementsParClientEtStatut("", "Tous");
         setVisible(true);
     }
+
 
     private void modifierPaiement() {
         int selectedRow = table.getSelectedRow();

@@ -12,37 +12,55 @@ public class ClientForm extends JFrame {
 
     public ClientForm() {
         setTitle("Ajouter un client");
-        setSize(450, 300);
+        setSize(500, 350);
+        setResizable(false); // Empêche le redimensionnement
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        // === Panel pour les champs ===
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
-        tfNom = new JTextField();
-        tfPrenom = new JTextField();
-        tfEmail = new JTextField();
-        tfTelephone = new JTextField();
-        tfAdresse = new JTextField();
+        // === Panel formulaire ===
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        panelForm.add(new JLabel("Nom:"));        panelForm.add(tfNom);
-        panelForm.add(new JLabel("Prénom:"));     panelForm.add(tfPrenom);
-        panelForm.add(new JLabel("Email:"));      panelForm.add(tfEmail);
-        panelForm.add(new JLabel("Téléphone:"));  panelForm.add(tfTelephone);
-        panelForm.add(new JLabel("Adresse:"));    panelForm.add(tfAdresse);
+        tfNom = new JTextField(20);
+        tfPrenom = new JTextField(20);
+        tfEmail = new JTextField(20);
+        tfTelephone = new JTextField(20);
+        tfAdresse = new JTextField(20);
+
+        gbc.gridx = 0; gbc.gridy = 0; panelForm.add(new JLabel("Nom:"), gbc);
+        gbc.gridx = 1; panelForm.add(tfNom, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Prénom:"), gbc);
+        gbc.gridx = 1; panelForm.add(tfPrenom, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1; panelForm.add(tfEmail, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Téléphone:"), gbc);
+        gbc.gridx = 1; panelForm.add(tfTelephone, gbc);
+
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Adresse:"), gbc);
+        gbc.gridx = 1; panelForm.add(tfAdresse, gbc);
 
         add(panelForm, BorderLayout.CENTER);
 
-        // === Panel pour les boutons ===
+        // === Panel boutons ===
         btnAjouter = new JButton("Ajouter");
         btnRetour = new JButton("Retour au menu");
 
-        JPanel panelBoutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        panelBoutons.add(btnAjouter);
-        panelBoutons.add(btnRetour);
-        add(panelBoutons, BorderLayout.SOUTH);
+        JPanel panelButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        panelButtons.add(btnAjouter);
+        panelButtons.add(btnRetour);
+        add(panelButtons, BorderLayout.SOUTH);
 
-        // Actions des boutons
+        // === Actions ===
         btnAjouter.addActionListener(e -> ajouterClient());
         btnRetour.addActionListener(e -> {
             this.dispose();
@@ -53,11 +71,11 @@ public class ClientForm extends JFrame {
     }
 
     private void ajouterClient() {
-        String nom = tfNom.getText();
-        String prenom = tfPrenom.getText();
-        String email = tfEmail.getText();
-        String telephone = tfTelephone.getText();
-        String adresse = tfAdresse.getText();
+        String nom = tfNom.getText().trim();
+        String prenom = tfPrenom.getText().trim();
+        String email = tfEmail.getText().trim();
+        String telephone = tfTelephone.getText().trim();
+        String adresse = tfAdresse.getText().trim();
 
         if (nom.isEmpty() || prenom.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nom et prénom sont obligatoires !");
@@ -74,11 +92,10 @@ public class ClientForm extends JFrame {
             ps.setString(5, adresse);
             ps.executeUpdate();
 
-            JOptionPane.showMessageDialog(this, "Client ajouté avec succès !");
+            JOptionPane.showMessageDialog(this, "✅ Client ajouté avec succès !");
             this.dispose();
             new MainMenu();
         } catch (SQLException ex) {
-            ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erreur SQL : " + ex.getMessage());
         }
     }

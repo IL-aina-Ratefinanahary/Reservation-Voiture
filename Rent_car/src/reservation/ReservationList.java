@@ -1,6 +1,7 @@
 package reservation;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.jdatepicker.impl.*;
 import java.awt.*;
@@ -19,7 +20,8 @@ public class ReservationList extends JFrame {
 
     public ReservationList() {
         setTitle("Liste des réservations");
-        setSize(950, 500);
+        setSize(1000, 520);
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -29,16 +31,27 @@ public class ReservationList extends JFrame {
         model.setColumnIdentifiers(new String[] {
             "ID", "Date début", "Date fin", "Prix Total", "Client", "Voiture", "Options"
         });
+
         table = new JTable(model);
+        table.setRowHeight(28);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        // Centrage des cellules
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        for (int i = 0; i < model.getColumnCount(); i++) {
+            table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
         add(new JScrollPane(table), BorderLayout.CENTER);
 
         // === Zone recherche & filtre ===
-        JPanel panelRecherche = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panelRecherche = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
         panelRecherche.setBorder(BorderFactory.createTitledBorder("🔍 Recherche par mot-clé (Client ou Voiture)"));
         tfRecherche = new JTextField(20);
         panelRecherche.add(tfRecherche);
 
-        JPanel panelFiltreDate = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel panelFiltreDate = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 5));
         panelFiltreDate.setBorder(BorderFactory.createTitledBorder("📅 Filtrer par date"));
         JLabel lblDe = new JLabel("De :");
         JDatePickerImpl dpDebut = createDatePicker();
@@ -61,6 +74,10 @@ public class ReservationList extends JFrame {
         btnModifier = new JButton("Modifier");
         btnSupprimer = new JButton("Supprimer");
         btnRetour = new JButton("Retour au menu");
+
+        btnModifier.setPreferredSize(new Dimension(130, 30));
+        btnSupprimer.setPreferredSize(new Dimension(130, 30));
+        btnRetour.setPreferredSize(new Dimension(150, 30));
 
         JPanel panelBas = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         panelBas.add(btnModifier);
@@ -95,6 +112,7 @@ public class ReservationList extends JFrame {
         chargerReservations();
         setVisible(true);
     }
+
 
     private JDatePickerImpl createDatePicker() {
         UtilDateModel model = new UtilDateModel();

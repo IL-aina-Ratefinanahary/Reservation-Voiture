@@ -14,9 +14,9 @@ public class MainMenu extends JFrame {
 	public MainMenu() {
 	    setTitle("Menu Principal");
 	    setSize(700, 600);
-	    setResizable(false); // ❌ Empêche de redimensionner la fenêtre
+	    setResizable(false); 
 	    setDefaultCloseOperation(EXIT_ON_CLOSE);
-	    setLocationRelativeTo(null); // ✅ Centre la fenêtre
+	    setLocationRelativeTo(null); 
 
 	    // === Barre de menu ===
 	    JMenuBar menuBar = new JMenuBar();

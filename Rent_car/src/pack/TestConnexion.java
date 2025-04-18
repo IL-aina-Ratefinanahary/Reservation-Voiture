@@ -8,7 +8,7 @@ public class TestConnexion {
             Connection conn = DriverManager.getConnection(
                 "jdbc:mysql://127.0.0.1:3306/projetgr01",
                 "root",
-                "Madagascar2022"        // a changer selon la BD
+                "Mdp"        // a changer selon la BD
             );
             System.out.println("Connexion réussie !");
         } catch (SQLException e) {

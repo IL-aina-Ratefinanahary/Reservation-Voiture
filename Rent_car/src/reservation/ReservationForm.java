@@ -169,7 +169,10 @@ public class ReservationForm extends JFrame {
                 JCheckBox cb = checkChoix.get(i);
                 if (cb.isSelected()) {
                     int idChoix = Integer.parseInt(cb.getName());
-                    int qte = Integer.parseInt(quantitesChoix.get(i).getText());
+                    
+                    String text = quantitesChoix.get(i).getText().trim();
+                    int qte = text.isEmpty() ? 0 : Integer.parseInt(text);
+ 
 
                     ps.setInt(1, idChoix);
                     ResultSet rs = ps.executeQuery();
@@ -184,14 +187,16 @@ public class ReservationForm extends JFrame {
         }
 
         lblOptionsTotal.setText(String.format("%.2f", total));
-        calculerTotalFinal();
+        calculerTotalFinal(); 
     }
+
 
 
     private void calculerTotalFinal() {
     try {
-        double prixVoiture = Double.parseDouble(tfPrixTotal.getText());
-        double prixOptions = Double.parseDouble(lblOptionsTotal.getText());
+    	double prixVoiture = Double.parseDouble(tfPrixTotal.getText().trim().replace(",", "."));
+    	double prixOptions = Double.parseDouble(lblOptionsTotal.getText().trim().replace(",", "."));
+
         lblTotalFinal.setText(String.format("%.2f", prixVoiture + prixOptions));
     } catch (Exception e) {
         lblTotalFinal.setText("0.00");
@@ -309,99 +314,114 @@ public class ReservationForm extends JFrame {
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
                     double prixJour = rs.getDouble("Prix_jour");
-                    tfPrixTotal.setText(String.format("%.2f", prixJour * days));
+                    double prixTotal = prixJour * days;
+                    tfPrixTotal.setText(String.format("%.2f", prixTotal));
+                    calculerTotalFinal();  
                 }
+
             }
 
         } catch (Exception e) {
             tfPrixTotal.setText("0.00");
+            calculerTotalFinal();
         }
     }
 
     private void ajouterReservation() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            Date dateDebut = (Date) dateDebutPicker.getModel().getValue();
-            Date dateFin = (Date) dateFinPicker.getModel().getValue();
+            conn.setAutoCommit(false);  
 
-            if (dateDebut == null || dateFin == null) {
-                JOptionPane.showMessageDialog(this, "Veuillez choisir les dates.");
-                return;
-            }
+            try {
+                Date dateDebut = (Date) dateDebutPicker.getModel().getValue();
+                Date dateFin = (Date) dateFinPicker.getModel().getValue();
 
-            int idClient = Integer.parseInt(((String) cbClient.getSelectedItem()).split(" - ")[0]);
-            int idVoiture = Integer.parseInt(((String) cbVoiture.getSelectedItem()).split(" - ")[0]);
-
-            // Vérifie les conflits de réservation
-            String verifSQL = """
-                SELECT COUNT(*) FROM RESERVATION 
-                WHERE IdVoiture = ? 
-                  AND (? < Date_fin AND ? > Date_debut)
-            """;
-
-            PreparedStatement check = conn.prepareStatement(verifSQL);
-            check.setInt(1, idVoiture);
-            check.setDate(2, new java.sql.Date(dateFin.getTime()));
-            check.setDate(3, new java.sql.Date(dateDebut.getTime()));
-            ResultSet result = check.executeQuery();
-            result.next();
-            if (result.getInt(1) > 0) {
-                JOptionPane.showMessageDialog(this, "Cette voiture est déjà réservée sur cette période.");
-                return;
-            }
-
-            // Calcul du prix final
-            double prixVoiture = Double.parseDouble(tfPrixTotal.getText());
-            double prixOptions = Double.parseDouble(lblOptionsTotal.getText());
-            double prixTotal = prixVoiture + prixOptions;
-
-            // Insertion de la réservation
-            String sql = "INSERT INTO RESERVATION (Date_debut, Date_fin, PrixTotal, IdClient, IdVoiture) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setDate(1, new java.sql.Date(dateDebut.getTime()));
-            ps.setDate(2, new java.sql.Date(dateFin.getTime()));
-            ps.setDouble(3, prixTotal);  // ✅ total = voiture + options
-            ps.setInt(4, idClient);
-            ps.setInt(5, idVoiture);
-            ps.executeUpdate();
-
-            // Récupérer l’ID de la réservation ajoutée
-            ResultSet rsId = ps.getGeneratedKeys();
-            int idReservation = -1;
-            if (rsId.next()) {
-                idReservation = rsId.getInt(1);
-            }
-
-            // Insérer les choix sélectionnés
-            String insertChoix = "INSERT INTO CHOIX_RESERVATION (IdReservation, IdChoix, Quantite) VALUES (?, ?, ?)";
-            PreparedStatement psChoix = conn.prepareStatement(insertChoix);
-
-            for (int i = 0; i < checkChoix.size(); i++) {
-                JCheckBox cb = checkChoix.get(i);
-                if (cb.isSelected()) {
-                    int idChoix = Integer.parseInt(cb.getName());
-                    int qte = Integer.parseInt(quantitesChoix.get(i).getText());
-
-                    psChoix.setInt(1, idReservation);
-                    psChoix.setInt(2, idChoix);
-                    psChoix.setInt(3, qte);
-                    psChoix.executeUpdate();
+                if (dateDebut == null || dateFin == null) {
+                    JOptionPane.showMessageDialog(this, "Veuillez choisir les dates.");
+                    return;
                 }
+
+                int idClient = Integer.parseInt(((String) cbClient.getSelectedItem()).split(" - ")[0]);
+                int idVoiture = Integer.parseInt(((String) cbVoiture.getSelectedItem()).split(" - ")[0]);
+
+                // Vérifie les conflits de réservation
+                String verifSQL = """
+                    SELECT COUNT(*) FROM RESERVATION 
+                    WHERE IdVoiture = ? 
+                      AND (? < Date_fin AND ? > Date_debut)
+                """;
+
+                PreparedStatement check = conn.prepareStatement(verifSQL);
+                check.setInt(1, idVoiture);
+                check.setDate(2, new java.sql.Date(dateFin.getTime()));
+                check.setDate(3, new java.sql.Date(dateDebut.getTime()));
+                ResultSet result = check.executeQuery();
+                result.next();
+                if (result.getInt(1) > 0) {
+                    JOptionPane.showMessageDialog(this, "Cette voiture est déjà réservée sur cette période.");
+                    return;
+                }
+
+                // Calcul du prix final
+                double prixVoiture = Double.parseDouble(tfPrixTotal.getText().replace(",", "."));
+                double prixOptions = Double.parseDouble(lblOptionsTotal.getText().replace(",", "."));
+                double prixTotal = prixVoiture + prixOptions;
+
+                // Insertion de la réservation
+                String sql = "INSERT INTO RESERVATION (Date_debut, Date_fin, PrixTotal, IdClient, IdVoiture) VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setDate(1, new java.sql.Date(dateDebut.getTime()));
+                ps.setDate(2, new java.sql.Date(dateFin.getTime()));
+                ps.setDouble(3, prixTotal);
+                ps.setInt(4, idClient);
+                ps.setInt(5, idVoiture);
+                ps.executeUpdate();
+
+                // Récupération de l'ID de la réservation
+                ResultSet rsId = ps.getGeneratedKeys();
+                int idReservation = -1;
+                if (rsId.next()) {
+                    idReservation = rsId.getInt(1);
+                }
+
+                // Insertion des choix
+                String insertChoix = "INSERT INTO CHOIX_RESERVATION (IdReservation, IdChoix, Quantite) VALUES (?, ?, ?)";
+                PreparedStatement psChoix = conn.prepareStatement(insertChoix);
+
+                for (int i = 0; i < checkChoix.size(); i++) {
+                    JCheckBox cb = checkChoix.get(i);
+                    if (cb.isSelected()) {
+                        int idChoix = Integer.parseInt(cb.getName());
+                        int qte = Integer.parseInt(quantitesChoix.get(i).getText());
+
+                        psChoix.setInt(1, idReservation);
+                        psChoix.setInt(2, idChoix);
+                        psChoix.setInt(3, qte);
+                        psChoix.executeUpdate();
+                    }
+                }
+
+                // Mise à jour de disponibilité
+                String update = "UPDATE VOITURE SET Disponibilite = FALSE WHERE IdVoiture = ?";
+                PreparedStatement ps2 = conn.prepareStatement(update);
+                ps2.setInt(1, idVoiture);
+                ps2.executeUpdate();
+
+                conn.commit();  
+
+                JOptionPane.showMessageDialog(this, "Réservation ajoutée !");
+                this.dispose();
+                new MainMenu();
+
+            } catch (Exception innerEx) {
+                conn.rollback();  
+                throw innerEx;
             }
-
-            // Mise à jour de la disponibilité
-            String update = "UPDATE VOITURE SET Disponibilite = FALSE WHERE IdVoiture = ?";
-            PreparedStatement ps2 = conn.prepareStatement(update);
-            ps2.setInt(1, idVoiture);
-            ps2.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Réservation ajoutée !");
-            this.dispose();
-            new MainMenu();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Erreur : " + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Erreur transactionnelle : " + e.getMessage());
         }
     }
+
 
 
 }

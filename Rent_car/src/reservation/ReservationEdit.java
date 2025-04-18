@@ -35,29 +35,68 @@ public class ReservationEdit extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
+        setLocationRelativeTo(null);
+        setResizable(false);
 
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 10));
+
+        JPanel panelForm = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
 
         cbClient = new JComboBox<>();
         cbVoiture = new JComboBox<>();
         tfPrixTotal = new JTextField();
         tfPrixTotal.setEditable(false);
-
         dateDebutPicker = createDatePicker();
         dateFinPicker = createDatePicker();
 
-        panelForm.add(new JLabel("Client :"));          panelForm.add(cbClient);
-        panelForm.add(new JLabel("Voiture :"));         panelForm.add(cbVoiture);
-        panelForm.add(new JLabel("Date début :"));      panelForm.add(dateDebutPicker);
-        panelForm.add(new JLabel("Date fin :"));        panelForm.add(dateFinPicker);
-        panelForm.add(new JLabel("Prix total ($) :"));  panelForm.add(tfPrixTotal);
-        panelForm.add(new JLabel("Options ($) :")); panelForm.add(lblOptionsTotal);
-        panelForm.add(new JLabel("Total final ($) :")); panelForm.add(lblTotalFinal);
+        // Ligne 1 - Client
+        gbc.gridx = 0; gbc.gridy = 0;
+        panelForm.add(new JLabel("Client :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(cbClient, gbc);
 
+        // Ligne 2 - Voiture
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Voiture :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(cbVoiture, gbc);
 
+        // Ligne 3 - Date début
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Date début :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(dateDebutPicker, gbc);
 
+        // Ligne 4 - Date fin
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Date fin :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(dateFinPicker, gbc);
+
+        // Ligne 5 - Prix voiture
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Prix total ($) :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(tfPrixTotal, gbc);
+
+        // Ligne 6 - Options
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Options ($) :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(lblOptionsTotal, gbc);
+
+        // Ligne 7 - Total
+        gbc.gridx = 0; gbc.gridy++;
+        panelForm.add(new JLabel("Total final ($) :"), gbc);
+        gbc.gridx = 1;
+        panelForm.add(lblTotalFinal, gbc);
 
         add(panelForm, BorderLayout.CENTER);
+
         
         panelChoix = new JPanel(new GridLayout(0, 2, 5, 5));
         panelChoix.setBorder(BorderFactory.createTitledBorder("Options associées à la réservation"));
@@ -104,7 +143,10 @@ public class ReservationEdit extends JFrame {
                 JCheckBox cb = checkChoix.get(i);
                 if (cb.isSelected()) {
                     int idChoix = Integer.parseInt(cb.getName());
-                    int qte = Integer.parseInt(quantitesChoix.get(i).getText());
+                    
+                    String text = quantitesChoix.get(i).getText().trim();
+                    int qte = text.isEmpty() ? 0 : Integer.parseInt(text);
+
 
                     ps.setInt(1, idChoix);
                     ResultSet rs = ps.executeQuery();
@@ -127,8 +169,9 @@ public class ReservationEdit extends JFrame {
     
     private void calculerTotalFinal() {
         try {
-            double prixVoiture = Double.parseDouble(tfPrixTotal.getText());
-            double prixOptions = Double.parseDouble(lblOptionsTotal.getText());
+        	double prixVoiture = Double.parseDouble(tfPrixTotal.getText().replace(",", "."));
+        	double prixOptions = Double.parseDouble(lblOptionsTotal.getText().replace(",", "."));
+
             double total = prixVoiture + prixOptions;
             lblTotalFinal.setText(String.format("%.2f", total));
         } catch (Exception e) {
@@ -187,7 +230,7 @@ public class ReservationEdit extends JFrame {
                 }
             }
 
-            // ✅ Un seul appel final
+            
             calculerTotalOptions();
 
         } catch (SQLException e) {
@@ -329,18 +372,19 @@ public class ReservationEdit extends JFrame {
 
     private void modifierReservation() {
         try (Connection conn = DatabaseConnection.getConnection()) {
+            conn.setAutoCommit(false); // 🔒 Début de transaction
+
             // Récupération des valeurs du formulaire
             Date dateDebut = (Date) dateDebutPicker.getModel().getValue();
             Date dateFin = (Date) dateFinPicker.getModel().getValue();
             int idClient = Integer.parseInt(cbClient.getSelectedItem().toString().split(" - ")[0]);
             int idVoiture = Integer.parseInt(cbVoiture.getSelectedItem().toString().split(" - ")[0]);
 
-            // ✅ Calcul total combiné
-            double prixVoiture = Double.parseDouble(tfPrixTotal.getText());
-            double prixOptions = Double.parseDouble(lblOptionsTotal.getText());
+            double prixVoiture = Double.parseDouble(tfPrixTotal.getText().replace(",", "."));
+            double prixOptions = Double.parseDouble(lblOptionsTotal.getText().replace(",", "."));
             double prixTotal = prixVoiture + prixOptions;
 
-            // ✅ Vérification chevauchement
+            // 🔍 Vérification de chevauchement
             String verifSQL = """
                 SELECT COUNT(*) FROM RESERVATION
                 WHERE IdVoiture = ?
@@ -349,7 +393,7 @@ public class ReservationEdit extends JFrame {
             """;
             PreparedStatement check = conn.prepareStatement(verifSQL);
             check.setInt(1, idVoiture);
-            check.setInt(2, idReservation); // exclut soi-même
+            check.setInt(2, idReservation);
             check.setDate(3, new java.sql.Date(dateFin.getTime()));
             check.setDate(4, new java.sql.Date(dateDebut.getTime()));
             ResultSet rs = check.executeQuery();
@@ -357,27 +401,32 @@ public class ReservationEdit extends JFrame {
 
             if (rs.getInt(1) > 0) {
                 JOptionPane.showMessageDialog(this, "❌ Cette voiture est déjà réservée à cette période.");
+                conn.rollback(); // ❌ Annule la transaction
                 return;
             }
 
-            // ✅ Mise à jour de la réservation avec prix total combiné
-            String sql = "UPDATE RESERVATION SET Date_debut=?, Date_fin=?, PrixTotal=?, IdClient=?, IdVoiture=? WHERE IdReservation=?";
+            // 🔄 Mise à jour de la réservation
+            String sql = """
+                UPDATE RESERVATION
+                SET Date_debut = ?, Date_fin = ?, PrixTotal = ?, IdClient = ?, IdVoiture = ?
+                WHERE IdReservation = ?
+            """;
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setDate(1, new java.sql.Date(dateDebut.getTime()));
             ps.setDate(2, new java.sql.Date(dateFin.getTime()));
-            ps.setDouble(3, prixTotal); // ✅ total = voiture + options
+            ps.setDouble(3, prixTotal);
             ps.setInt(4, idClient);
             ps.setInt(5, idVoiture);
             ps.setInt(6, idReservation);
             ps.executeUpdate();
 
-            // Supprimer les anciennes options
+            // ❌ Suppression des anciens choix
             String delete = "DELETE FROM CHOIX_RESERVATION WHERE IdReservation = ?";
             PreparedStatement psDelete = conn.prepareStatement(delete);
             psDelete.setInt(1, idReservation);
             psDelete.executeUpdate();
 
-            // Réinsérer les choix sélectionnés
+            // ➕ Insertion des nouveaux choix
             String insert = "INSERT INTO CHOIX_RESERVATION (IdReservation, IdChoix, Quantite) VALUES (?, ?, ?)";
             PreparedStatement psInsert = conn.prepareStatement(insert);
 
@@ -385,7 +434,8 @@ public class ReservationEdit extends JFrame {
                 JCheckBox cb = checkChoix.get(i);
                 if (cb.isSelected()) {
                     int idChoix = Integer.parseInt(cb.getName());
-                    int qte = Integer.parseInt(quantitesChoix.get(i).getText());
+                    String text = quantitesChoix.get(i).getText().trim();
+                    int qte = text.isEmpty() ? 0 : Integer.parseInt(text);
 
                     psInsert.setInt(1, idReservation);
                     psInsert.setInt(2, idChoix);
@@ -394,13 +444,21 @@ public class ReservationEdit extends JFrame {
                 }
             }
 
+            conn.commit(); // ✅ Tout est bon, on valide la transaction
             JOptionPane.showMessageDialog(this, "✅ Réservation mise à jour !");
             this.dispose();
 
         } catch (Exception e) {
+            try {
+                Connection conn = DatabaseConnection.getConnection();
+                if (conn != null) conn.rollback(); // ❌ Annulation en cas d'erreur
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             JOptionPane.showMessageDialog(this, "Erreur : " + e.getMessage());
         }
     }
+
 
 
 }

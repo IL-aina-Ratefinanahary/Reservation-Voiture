@@ -25,7 +25,7 @@ public class ChoixList extends JFrame {
         // === Modèle de table ===
         model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[] {
-            "ID", "Nom", "Description", "Prix ($)"
+            "ID", "Nom", "Description", "Prix ($/unité/jour)"
         });
 
         // === Table ===

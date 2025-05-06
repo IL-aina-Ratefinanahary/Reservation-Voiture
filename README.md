@@ -29,7 +29,7 @@ Ce projet consiste à développer une application de bureau en Java Swing connec
 
 ## 🖥️ Captures d'écran
 
-![Menu principal de l'application](docs/menu_principal.png)
+![Menu principal de l'application](Rent_car/menu_principal.png)
 
 ## ⚙️ Installation
 
